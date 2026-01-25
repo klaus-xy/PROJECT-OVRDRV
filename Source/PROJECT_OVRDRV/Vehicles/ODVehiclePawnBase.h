@@ -7,11 +7,12 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "ODVehiclePawnBase.generated.h"
 
+class UChaosWheeledVehicleMovementComponent;
 class UCameraComponent;
 struct FInputActionValue;
 class UInputAction;
 
-UCLASS(abstract)
+UCLASS(Abstract)
 class PROJECT_OVRDRV_API AODVehiclePawnBase : public AWheeledVehiclePawn
 {
 	GENERATED_BODY()
@@ -33,7 +34,7 @@ public:
 
 protected:
 	//	----------------	🩻[CHAOS VEHICLE MOVEMENT COMPONENT SETUP]🛻		------------ //
-	TObjectPtr<UChaosVehicleMovementComponent> VehicleMovementComponent;
+	TObjectPtr<UChaosWheeledVehicleMovementComponent> CurrentVehicleMovementComponent;
 
 public:
 	//	----------------	🩻[CHASSIS SETUP]🛻		------------ //
@@ -114,4 +115,7 @@ public:
 
 	// Handles brake logic
 	void HandleBrake(float Value);
+
+public:
+	const TObjectPtr<UChaosWheeledVehicleMovementComponent>& GetCurrentMovementComponent() const {return CurrentVehicleMovementComponent;}
 };

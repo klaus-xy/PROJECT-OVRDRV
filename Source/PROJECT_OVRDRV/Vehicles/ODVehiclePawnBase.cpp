@@ -3,7 +3,7 @@
 
 #include "ODVehiclePawnBase.h"
 
-#include "ChaosVehicleMovementComponent.h"
+#include "ChaosWheeledVehicleMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 
@@ -47,7 +47,7 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	RearSpringArm->SetupAttachment(GetMesh());	// Attach spring arm to parent skeletal mesh
 	RearSpringArm->TargetArmLength = 650.0f;
 	RearSpringArm->SocketOffset.Z = 150.0f;
-	//RearSpringArm->bDoCollisionTest = false;
+	RearSpringArm->bDoCollisionTest = false;
 	//RearSpringArm->bInheritPitch = false;
 	//RearSpringArm->bInheritRoll = false;
 	//RearSpringArm->bEnableCameraRotationLag = true;
@@ -63,7 +63,7 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	GetMesh()->SetCollisionProfileName(FName("Vehicle"));
 
 	//	----------------	[SETUP CHAOS VEHICLE MOVEMENT COMPONENT]	------------------	//
-	VehicleMovementComponent = CastChecked<UChaosVehicleMovementComponent>(GetVehicleMovement());
+	CurrentVehicleMovementComponent = CastChecked<UChaosWheeledVehicleMovementComponent>(GetVehicleMovement());
 }
 
 // Called when the game starts or when spawned
@@ -125,6 +125,7 @@ void AODVehiclePawnBase::HandleSteering(float Value)
 void AODVehiclePawnBase::HandleThrottle(float Value)
 {
 	// Throttle logic
+	CurrentVehicleMovementComponent->SetThrottleInput(Value);
 }
 
 void AODVehiclePawnBase::HandleBrake(float Value)

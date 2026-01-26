@@ -6,14 +6,14 @@
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "ODSportWheelFront.h"
 #include "ODSportWheelRear.h"
-#include "Vehicles/ODWheelFrontBase.h"
-#include "Vehicles/ODWheelRearBase.h"
+
 
 
 // Sets default values
 AODSportsCar::AODSportsCar()
 {
 	//	----------------	🛞[CHAOS PHYSICS WHEELS SETUP]🛻		------------ //
+	// VehicleData.ChassisData.Mass = 200.0f;
 	GetCurrentMovementComponent()->WheelSetups.SetNum(4);
 	
 	GetCurrentMovementComponent()->WheelSetups[0].WheelClass = UODSportWheelFront::StaticClass();
@@ -33,6 +33,7 @@ AODSportsCar::AODSportsCar()
 	GetCurrentMovementComponent()->WheelSetups[3].AdditionalOffset = FVector(0.0f, 0.0f, 0.0f);
 
 }
+
 
 
 

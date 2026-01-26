@@ -64,12 +64,40 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 
 	//	----------------	[SETUP CHAOS VEHICLE MOVEMENT COMPONENT]	------------------	//
 	CurrentVehicleMovementComponent = CastChecked<UChaosWheeledVehicleMovementComponent>(GetVehicleMovement());
+
+	
+
+	//	----------------	[SETUP ALL VEHICLES DATA TABLE]	------------------	//
+	static ConstructorHelpers::FObjectFinder<UDataTable> VehiclesDataTableFinder(TEXT("/Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+
+	if (VehiclesDataTableFinder.Succeeded())
+	{
+		VehiclesDataTable = VehiclesDataTableFinder.Object;
+		UE_LOG(LogTemp, Log, TEXT("✔️ Found and Assigned Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("❌ Failed to find Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+	}
+
+	if (CurrentVehicleMovementComponent)
+	{
+		BindVehicleData();
+	}
+	
+	VehicleID = VehicleData.VehicleID;
+
+	//	----------------	[BIND VEHICLE DATA]	------------------	//
+	
 }
 
 // Called when the game starts or when spawned
 void AODVehiclePawnBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Initialize Vehicle Data (If found in Data Table)
+	InitVehicleData();
 	
 }
 
@@ -100,6 +128,59 @@ void AODVehiclePawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::StopBrake);
 
 	}
+}
+
+void AODVehiclePawnBase::InitVehicleData()
+{
+	// Find vehicle data from Data Table using Vehicle ID. Assign to Vehicle Data if found. Else, throw an error.
+	if (VehiclesDataTable)
+	{
+		FODVehicleData* RowData = VehiclesDataTable->FindRow<FODVehicleData>(VehicleID, TEXT("ℹ Vehicle Data Init"));
+		if (RowData)
+		{
+			VehicleData = *RowData;
+			BindVehicleData();
+			
+			GEngine->AddOnScreenDebugMessage(0,5,FColor::Green,FString::Printf(
+			TEXT("✅ Vehicle Data Assigned: %s (ID:: %s)"),
+			*VehicleData.VehicleName.ToString(),
+			*VehicleData.VehicleID.ToString()
+			));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(0,5,FColor::Red,FString::Printf(
+			TEXT("❌ Vehicle Row Data Not Found in DataTable:: %s"),
+			*VehicleID.ToString()));
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(0,5,FColor::Red,TEXT("No Vehicle Data Table Found!"));
+	}
+
+}
+
+void AODVehiclePawnBase::BindVehicleData()
+{
+	
+	// Bind chassis setup
+	GetCurrentMovementComponent()->Mass = VehicleData.ChassisData.Mass;
+	GetCurrentMovementComponent()->ChassisHeight = VehicleData.ChassisData.ChassisHeight;
+	GetCurrentMovementComponent()->DragCoefficient = VehicleData.ChassisData.DragCoefficient;
+	
+	// Bind engine setup
+	GetCurrentMovementComponent()->EngineSetup.EngineIdleRPM = VehicleData.EngineData.EngineIdleRPM;
+	//GetCurrentMovementComponent()->EngineSetup = VehicleData.EngineData;
+
+	// Bind differential setup
+	//GetCurrentMovementComponent()->DifferentialSetup = VehicleData.DifferentialData;
+	
+	// Bind transmission setup
+	//GetCurrentMovementComponent()->TransmissionSetup = VehicleData.TransmissionData;
+
+	// Bind steering setup
+	//GetCurrentMovementComponent()->SteeringSetup = VehicleData.SteeringData;
 }
 
 void AODVehiclePawnBase::Steering(const FInputActionValue& Value)

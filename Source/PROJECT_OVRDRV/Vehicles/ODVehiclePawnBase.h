@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WheeledVehiclePawn.h"
+#include "Data/ODVehicleData.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "ODVehiclePawnBase.generated.h"
 
@@ -35,31 +36,48 @@ public:
 protected:
 	//	----------------	🩻[CHAOS VEHICLE MOVEMENT COMPONENT SETUP]🛻		------------ //
 	TObjectPtr<UChaosWheeledVehicleMovementComponent> CurrentVehicleMovementComponent;
+	
 
+	//	----------------	📅[VEHICLE DATA SETUP]🛻		------------ //
+	UPROPERTY(EditDefaultsOnly, Category="Vehicle Setup|Data")
+	TObjectPtr<UDataTable> VehiclesDataTable; // Todo:: Auto find in project.
+
+	UPROPERTY(EditDefaultsOnly, Category="Vehicle Setup|Data")
+	FName VehicleID; // Only editable in blueprints and not instances.
+
+	UPROPERTY()
+	FODVehicleData VehicleData;
+
+	// Init Vehicle Data from Data Table
+	void InitVehicleData();
+	
+	// Bind vehicle data to corresponding Chaos Movement Component variables
+	void BindVehicleData();
+	
 public:
 	//	----------------	🩻[CHASSIS SETUP]🛻		------------ //
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Chassis")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
 	TObjectPtr<UStaticMeshComponent> ChassisMesh;
 
 	//	----------------	🛞[WHEELS SETUP]🛻		------------ //
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Chassis")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
 	TObjectPtr<UStaticMeshComponent> WheelFR;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Chassis")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
 	TObjectPtr<UStaticMeshComponent> WheelFL;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Chassis")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
 	TObjectPtr<UStaticMeshComponent> WheelBR;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Chassis")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
 	TObjectPtr<UStaticMeshComponent> WheelBL;
 	
 	//	----------------	🎥[CAMERA SETUP]🎥		------------ //
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Camera")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
 	TObjectPtr<USpringArmComponent> RearSpringArm;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Camera")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
 	TObjectPtr<UCameraComponent> RearCamera;
 	
 	protected:

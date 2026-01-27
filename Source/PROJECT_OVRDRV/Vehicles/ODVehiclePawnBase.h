@@ -40,7 +40,7 @@ protected:
 
 	//	----------------	📅[VEHICLE DATA SETUP]🛻		------------ //
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Setup|Data")
-	TObjectPtr<UDataTable> VehiclesDataTable; // Todo:: Auto find in project.
+	TObjectPtr<UDataTable> VehiclesDataTable;
 
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Setup|Data")
 	FName VehicleID; // Only editable in blueprints and not instances.
@@ -123,6 +123,9 @@ public:
 
 	// Handles brake input 
 	void Brake(const FInputActionValue& Value);
+
+	// Handles look around input
+	void LookAround(const FInputActionValue& Value);
 	
 	// ----		[INPUT METHODS]		---- //
 	// Handles steering logic
@@ -133,6 +136,9 @@ public:
 
 	// Handles brake logic
 	void HandleBrake(float Value);
+
+	// Handles mouse look around 
+	void HandleLookAround(float YawDelta);
 
 public:
 	const TObjectPtr<UChaosWheeledVehicleMovementComponent>& GetCurrentMovementComponent() const {return CurrentVehicleMovementComponent;}

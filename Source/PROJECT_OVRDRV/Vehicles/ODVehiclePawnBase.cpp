@@ -43,16 +43,18 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	//	----------------	[CONSTRUCT CAMERA SETUP]	------------------	//
 	// [INIT REAR CAMERA]
 	// Rear Spring Arm Setup
-	RearSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Front Spring Arm"));	  // Create Spring arm 
+	RearSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Rear Spring Arm"));	  // Create Spring arm 
 	RearSpringArm->SetupAttachment(GetMesh());	// Attach spring arm to parent skeletal mesh
-	RearSpringArm->TargetArmLength = 650.0f;
+	RearSpringArm->TargetArmLength = 600.0f;
 	RearSpringArm->SocketOffset.Z = 150.0f;
 	RearSpringArm->bDoCollisionTest = false;
-	//RearSpringArm->bInheritPitch = false;
-	//RearSpringArm->bInheritRoll = false;
-	//RearSpringArm->bEnableCameraRotationLag = true;
-	//RearSpringArm->CameraRotationLagSpeed = 2.0f;
-	//RearSpringArm->CameraLagMaxDistance = 50.0f;
+	RearSpringArm->bInheritPitch = false;
+	RearSpringArm->bInheritRoll = false;
+	RearSpringArm->bEnableCameraLag = true;
+	RearSpringArm->CameraLagSpeed = 8.0f;
+	RearSpringArm->bEnableCameraRotationLag = true;
+	RearSpringArm->CameraRotationLagSpeed = 4.0f;
+	RearSpringArm->CameraLagMaxDistance = 400.0f;
 
 	// Rear Camera Setup
 	RearCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Front Camera"));
@@ -124,8 +126,13 @@ void AODVehiclePawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 		// Brake
 		EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Triggered, this, &AODVehiclePawnBase::Brake);
+		EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::Brake);
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Started, this, &AODVehiclePawnBase::StartBrake);
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::StopBrake);
+
+		// look around 
+		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this, &AODVehiclePawnBase::LookAround);
+		// Reset Camera on complete
 
 	}
 }
@@ -163,6 +170,7 @@ void AODVehiclePawnBase::InitVehicleData()
 
 void AODVehiclePawnBase::BindVehicleData()
 {
+	//Todo:: Also call bind in inherited constructor after Updating Vehicle data 
 	
 	// Bind chassis setup
 	GetCurrentMovementComponent()->Mass = VehicleData.ChassisData.Mass;
@@ -198,9 +206,16 @@ void AODVehiclePawnBase::Brake(const FInputActionValue& Value)
 	HandleBrake(Value.Get<float>());
 }
 
+void AODVehiclePawnBase::LookAround(const FInputActionValue& Value)
+{
+	HandleLookAround(Value.Get<float>());
+}
+
+//	---------- INPUT HANDLER METHODS	---------	//
 void AODVehiclePawnBase::HandleSteering(float Value)
 {
 	// Steering logic
+	CurrentVehicleMovementComponent->SetSteeringInput(Value);
 }
 
 void AODVehiclePawnBase::HandleThrottle(float Value)
@@ -212,5 +227,14 @@ void AODVehiclePawnBase::HandleThrottle(float Value)
 void AODVehiclePawnBase::HandleBrake(float Value)
 {
 	// Braking logic
+	CurrentVehicleMovementComponent->SetBrakeInput(Value);
 }
+
+void AODVehiclePawnBase::HandleLookAround(float YawDelta)
+{
+	// Look around logic
+	RearSpringArm->AddLocalRotation(FRotator(0.0f, YawDelta, 0.0f));
+}
+
+// Todo:: handle camera reset. 
 

@@ -4,13 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Vehicles/ODWheelFrontBase.h"
-#include "ODSportWheelFront.generated.h"
+#include "ODSportsWheelFront.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_OVRDRV_API UODSportWheelFront : public UODWheelFrontBase
+class PROJECT_OVRDRV_API UODSportsWheelFront : public UODWheelFrontBase
 {
 	GENERATED_BODY()
+
+	UODSportsWheelFront();
 };

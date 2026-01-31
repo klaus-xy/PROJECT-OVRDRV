@@ -13,4 +13,6 @@ UCLASS()
 class PROJECT_OVRDRV_API UODSportWheelRear : public UODWheelRearBase
 {
 	GENERATED_BODY()
+
+	UODSportWheelRear();
 };

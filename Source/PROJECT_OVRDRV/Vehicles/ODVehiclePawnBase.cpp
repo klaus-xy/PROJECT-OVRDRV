@@ -43,16 +43,18 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	//	----------------	[CONSTRUCT CAMERA SETUP]	------------------	//
 	// [INIT REAR CAMERA]
 	// Rear Spring Arm Setup
-	RearSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Front Spring Arm"));	  // Create Spring arm 
+	RearSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Rear Spring Arm"));	  // Create Spring arm 
 	RearSpringArm->SetupAttachment(GetMesh());	// Attach spring arm to parent skeletal mesh
-	RearSpringArm->TargetArmLength = 650.0f;
+	RearSpringArm->TargetArmLength = 600.0f;
 	RearSpringArm->SocketOffset.Z = 150.0f;
 	RearSpringArm->bDoCollisionTest = false;
-	//RearSpringArm->bInheritPitch = false;
-	//RearSpringArm->bInheritRoll = false;
-	//RearSpringArm->bEnableCameraRotationLag = true;
-	//RearSpringArm->CameraRotationLagSpeed = 2.0f;
-	//RearSpringArm->CameraLagMaxDistance = 50.0f;
+	RearSpringArm->bInheritPitch = false;
+	RearSpringArm->bInheritRoll = false;
+	RearSpringArm->bEnableCameraLag = true;
+	RearSpringArm->CameraLagSpeed = 8.0f;
+	RearSpringArm->bEnableCameraRotationLag = true;
+	RearSpringArm->CameraRotationLagSpeed = 4.0f;
+	RearSpringArm->CameraLagMaxDistance = 400.0f;
 
 	// Rear Camera Setup
 	RearCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Front Camera"));
@@ -68,28 +70,19 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	
 
 	//	----------------	[SETUP ALL VEHICLES DATA TABLE]	------------------	//
-	static ConstructorHelpers::FObjectFinder<UDataTable> VehiclesDataTableFinder(TEXT("/Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
-
-	if (VehiclesDataTableFinder.Succeeded())
-	{
-		VehiclesDataTable = VehiclesDataTableFinder.Object;
-		UE_LOG(LogTemp, Log, TEXT("✔️ Found and Assigned Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("❌ Failed to find Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
-	}
+	TryFindAllVehiclesDataTable();
 
 	if (CurrentVehicleMovementComponent)
 	{
-		BindVehicleData();
+		BindVehicleConfig();
 	}
 	
 	VehicleID = VehicleData.VehicleID;
-
-	//	----------------	[BIND VEHICLE DATA]	------------------	//
 	
 }
+
+
+
 
 // Called when the game starts or when spawned
 void AODVehiclePawnBase::BeginPlay()
@@ -97,7 +90,7 @@ void AODVehiclePawnBase::BeginPlay()
 	Super::BeginPlay();
 
 	// Initialize Vehicle Data (If found in Data Table)
-	InitVehicleData();
+	InitVehicleConfig();
 	
 }
 
@@ -124,13 +117,33 @@ void AODVehiclePawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 		// Brake
 		EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Triggered, this, &AODVehiclePawnBase::Brake);
+		EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::Brake);
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Started, this, &AODVehiclePawnBase::StartBrake);
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::StopBrake);
+
+		// look around 
+		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this, &AODVehiclePawnBase::LookAround);
+		// Reset Camera on complete
 
 	}
 }
 
-void AODVehiclePawnBase::InitVehicleData()
+void AODVehiclePawnBase::TryFindAllVehiclesDataTable()
+{
+	static ConstructorHelpers::FObjectFinder<UDataTable> VehiclesDataTableFinder(TEXT("/Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+
+	if (VehiclesDataTableFinder.Succeeded())
+	{
+		VehiclesDataTable = VehiclesDataTableFinder.Object;
+		UE_LOG(LogTemp, Log, TEXT("✔️ Found and Assigned Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("❌ Failed to find Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+	}
+}
+
+void AODVehiclePawnBase::InitVehicleConfig()
 {
 	// Find vehicle data from Data Table using Vehicle ID. Assign to Vehicle Data if found. Else, throw an error.
 	if (VehiclesDataTable)
@@ -139,8 +152,10 @@ void AODVehiclePawnBase::InitVehicleData()
 		if (RowData)
 		{
 			VehicleData = *RowData;
-			BindVehicleData();
-			
+			BindVehicleConfig();
+			CurrentVehicleMovementComponent->RecreatePhysicsState();
+
+			UE_LOG(LogTemp, Log, TEXT("✔️ VEHICLE DATA FOUND AND APPLIED"));
 			GEngine->AddOnScreenDebugMessage(0,5,FColor::Green,FString::Printf(
 			TEXT("✅ Vehicle Data Assigned: %s (ID:: %s)"),
 			*VehicleData.VehicleName.ToString(),
@@ -149,6 +164,7 @@ void AODVehiclePawnBase::InitVehicleData()
 		}
 		else
 		{
+			UE_LOG(LogTemp, Log, TEXT("❌ VEHICLE DATA NOT FOUND"));
 			GEngine->AddOnScreenDebugMessage(0,5,FColor::Red,FString::Printf(
 			TEXT("❌ Vehicle Row Data Not Found in DataTable:: %s"),
 			*VehicleID.ToString()));
@@ -161,8 +177,9 @@ void AODVehiclePawnBase::InitVehicleData()
 
 }
 
-void AODVehiclePawnBase::BindVehicleData()
+void AODVehiclePawnBase::BindVehicleConfig()
 {
+	// Binds found vehicle row data to a corresponding movement component.
 	
 	// Bind chassis setup
 	GetCurrentMovementComponent()->Mass = VehicleData.ChassisData.Mass;
@@ -170,17 +187,16 @@ void AODVehiclePawnBase::BindVehicleData()
 	GetCurrentMovementComponent()->DragCoefficient = VehicleData.ChassisData.DragCoefficient;
 	
 	// Bind engine setup
-	GetCurrentMovementComponent()->EngineSetup.EngineIdleRPM = VehicleData.EngineData.EngineIdleRPM;
-	//GetCurrentMovementComponent()->EngineSetup = VehicleData.EngineData;
+	GetCurrentMovementComponent()->EngineSetup = VehicleData.EngineData;
 
 	// Bind differential setup
-	//GetCurrentMovementComponent()->DifferentialSetup = VehicleData.DifferentialData;
+	GetCurrentMovementComponent()->DifferentialSetup = VehicleData.DifferentialData;
 	
 	// Bind transmission setup
-	//GetCurrentMovementComponent()->TransmissionSetup = VehicleData.TransmissionData;
+	GetCurrentMovementComponent()->TransmissionSetup = VehicleData.TransmissionData;
 
 	// Bind steering setup
-	//GetCurrentMovementComponent()->SteeringSetup = VehicleData.SteeringData;
+	GetCurrentMovementComponent()->SteeringSetup = VehicleData.SteeringData;
 }
 
 void AODVehiclePawnBase::Steering(const FInputActionValue& Value)
@@ -198,9 +214,16 @@ void AODVehiclePawnBase::Brake(const FInputActionValue& Value)
 	HandleBrake(Value.Get<float>());
 }
 
+void AODVehiclePawnBase::LookAround(const FInputActionValue& Value)
+{
+	HandleLookAround(Value.Get<float>());
+}
+
+//	---------- INPUT HANDLER METHODS	---------	//
 void AODVehiclePawnBase::HandleSteering(float Value)
 {
 	// Steering logic
+	CurrentVehicleMovementComponent->SetSteeringInput(Value);
 }
 
 void AODVehiclePawnBase::HandleThrottle(float Value)
@@ -212,5 +235,14 @@ void AODVehiclePawnBase::HandleThrottle(float Value)
 void AODVehiclePawnBase::HandleBrake(float Value)
 {
 	// Braking logic
+	CurrentVehicleMovementComponent->SetBrakeInput(Value);
 }
+
+void AODVehiclePawnBase::HandleLookAround(float YawDelta)
+{
+	// Look around logic
+	RearSpringArm->AddLocalRotation(FRotator(0.0f, YawDelta, 0.0f));
+}
+
+// Todo:: handle camera reset. 
 

@@ -23,6 +23,8 @@ public:
 	AODVehiclePawnBase();
 
 protected:
+	// virtual void OnConstruction(const FTransform& Transform) override;
+	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -40,19 +42,23 @@ protected:
 
 	//	----------------	📅[VEHICLE DATA SETUP]🛻		------------ //
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Setup|Data")
-	TObjectPtr<UDataTable> VehiclesDataTable; // Todo:: Auto find in project.
+	TObjectPtr<UDataTable> VehiclesDataTable;
+
+	// Find the UDataTable component containing all the vehicles data via a project directory. 
+	void TryFindAllVehiclesDataTable();
 
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Setup|Data")
 	FName VehicleID; // Only editable in blueprints and not instances.
 
+	// Vehicle Row Data
 	UPROPERTY()
 	FODVehicleData VehicleData;
 
 	// Init Vehicle Data from Data Table
-	void InitVehicleData();
+	void InitVehicleConfig();
 	
 	// Bind vehicle data to corresponding Chaos Movement Component variables
-	void BindVehicleData();
+	void BindVehicleConfig();
 	
 public:
 	//	----------------	🩻[CHASSIS SETUP]🛻		------------ //
@@ -123,6 +129,9 @@ public:
 
 	// Handles brake input 
 	void Brake(const FInputActionValue& Value);
+
+	// Handles look around input
+	void LookAround(const FInputActionValue& Value);
 	
 	// ----		[INPUT METHODS]		---- //
 	// Handles steering logic
@@ -133,6 +142,9 @@ public:
 
 	// Handles brake logic
 	void HandleBrake(float Value);
+
+	// Handles mouse look around 
+	void HandleLookAround(float YawDelta);
 
 public:
 	const TObjectPtr<UChaosWheeledVehicleMovementComponent>& GetCurrentMovementComponent() const {return CurrentVehicleMovementComponent;}

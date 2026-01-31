@@ -4,7 +4,7 @@
 #include "ODSportsCar.h"
 
 #include "ChaosWheeledVehicleMovementComponent.h"
-#include "ODSportWheelFront.h"
+#include "ODSportsWheelFront.h"
 #include "ODSportWheelRear.h"
 
 
@@ -12,15 +12,20 @@
 // Sets default values
 AODSportsCar::AODSportsCar()
 {
+	// todo:: setup default values for sport cars
+	// todo:: default vehicle id based on vehicle type 
+	
 	//	----------------	🛞[CHAOS PHYSICS WHEELS SETUP]🛻		------------ //
-	// VehicleData.ChassisData.Mass = 200.0f;
+	GetCurrentMovementComponent()->ChassisHeight = 144.0f;
+	GetCurrentMovementComponent()->DragCoefficient = 0.31f;
+	
 	GetCurrentMovementComponent()->WheelSetups.SetNum(4);
 	
-	GetCurrentMovementComponent()->WheelSetups[0].WheelClass = UODSportWheelFront::StaticClass();
+	GetCurrentMovementComponent()->WheelSetups[0].WheelClass = UODSportsWheelFront::StaticClass();
 	GetCurrentMovementComponent()->WheelSetups[0].BoneName = FName("Phys_Wheel_FL");
 	GetCurrentMovementComponent()->WheelSetups[0].AdditionalOffset = FVector(0.0f, 0.0f, 0.0f);
 
-	GetCurrentMovementComponent()->WheelSetups[1].WheelClass = UODSportWheelFront::StaticClass();
+	GetCurrentMovementComponent()->WheelSetups[1].WheelClass = UODSportsWheelFront::StaticClass();
 	GetCurrentMovementComponent()->WheelSetups[1].BoneName = FName("Phys_Wheel_FR");
 	GetCurrentMovementComponent()->WheelSetups[1].AdditionalOffset = FVector(0.0f, 0.0f, 0.0f);
 
@@ -32,6 +37,7 @@ AODSportsCar::AODSportsCar()
 	GetCurrentMovementComponent()->WheelSetups[3].BoneName = FName("Phys_Wheel_BR");
 	GetCurrentMovementComponent()->WheelSetups[3].AdditionalOffset = FVector(0.0f, 0.0f, 0.0f);
 
+	//VehicleData.EngineData.MaxRPM = 62545.0f;
 }
 
 

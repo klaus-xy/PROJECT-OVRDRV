@@ -12,6 +12,9 @@
 // Sets default values
 AODSportsCar::AODSportsCar()
 {
+	// todo:: setup default values for sport cars
+	// todo:: default vehicle id based on vehicle type 
+	
 	//	----------------	🛞[CHAOS PHYSICS WHEELS SETUP]🛻		------------ //
 	GetCurrentMovementComponent()->ChassisHeight = 144.0f;
 	GetCurrentMovementComponent()->DragCoefficient = 0.31f;

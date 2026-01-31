@@ -78,20 +78,10 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	}
 	
 	VehicleID = VehicleData.VehicleID;
-
-	//	----------------	[BIND VEHICLE DATA]	------------------	//
 	
 }
 
-// void AODVehiclePawnBase::OnConstruction(const FTransform& Transform)
-// {
-// 	Super::OnConstruction(Transform);
-//
-// #if WITH_EDITOR
-// 	InitVehicleConfig();		// Pull latest config from data table on property change (and other editor change events)
-// 	UE_LOG(LogTemp, Log, TEXT("✔️ VEHICLE DATA UPDATED"));
-// #endif
-// }
+
 
 
 // Called when the game starts or when spawned
@@ -189,10 +179,7 @@ void AODVehiclePawnBase::InitVehicleConfig()
 
 void AODVehiclePawnBase::BindVehicleConfig()
 {
-	// Binds found vehicle data to a corresponding movement component.
-	
-	// Todo:: Also call bind in inherited constructor after Updating Vehicle data too in child classes 
-	// Todo:: Separate into individual Apply functions
+	// Binds found vehicle row data to a corresponding movement component.
 	
 	// Bind chassis setup
 	GetCurrentMovementComponent()->Mass = VehicleData.ChassisData.Mass;
@@ -200,31 +187,16 @@ void AODVehiclePawnBase::BindVehicleConfig()
 	GetCurrentMovementComponent()->DragCoefficient = VehicleData.ChassisData.DragCoefficient;
 	
 	// Bind engine setup
-	GetCurrentMovementComponent()->EngineSetup.MaxTorque = VehicleData.EngineData.MaxTorque;
-	GetCurrentMovementComponent()->EngineSetup.MaxTorque = VehicleData.EngineData.MaxTorque;
-	GetCurrentMovementComponent()->EngineSetup.MaxRPM = VehicleData.EngineData.MaxRPM;
-	GetCurrentMovementComponent()->EngineSetup.EngineIdleRPM = VehicleData.EngineData.EngineIdleRPM;
-	GetCurrentMovementComponent()->EngineSetup.EngineBrakeEffect = VehicleData.EngineData.EngineBrakeEffect ;
-	GetCurrentMovementComponent()->EngineSetup.EngineRevUpMOI = VehicleData.EngineData.EngineRevUpMOI;
-	GetCurrentMovementComponent()->EngineSetup.EngineRevDownRate = VehicleData.EngineData.EngineRevDownRate;
-	GetCurrentMovementComponent()->EngineSetup.TorqueCurve = VehicleData.EngineData.TorqueCurve;
+	GetCurrentMovementComponent()->EngineSetup = VehicleData.EngineData;
 
 	// Bind differential setup
 	GetCurrentMovementComponent()->DifferentialSetup = VehicleData.DifferentialData;
 	
 	// Bind transmission setup
-	GetCurrentMovementComponent()->TransmissionSetup.bUseAutomaticGears = VehicleData.TransmissionData.bUseAutomaticGears;
-	GetCurrentMovementComponent()->TransmissionSetup.bUseAutoReverse = VehicleData.TransmissionData.bUseAutoReverse;
-	GetCurrentMovementComponent()->TransmissionSetup.FinalRatio = VehicleData.TransmissionData.FinalRatio;
-	GetCurrentMovementComponent()->TransmissionSetup.ChangeUpRPM = VehicleData.TransmissionData.ChangeUpRPM;
-	GetCurrentMovementComponent()->TransmissionSetup.ChangeDownRPM = VehicleData.TransmissionData.ChangeDownRPM;
-	GetCurrentMovementComponent()->TransmissionSetup.GearChangeTime = VehicleData.TransmissionData.GearChangeTime;
-	GetCurrentMovementComponent()->TransmissionSetup.TransmissionEfficiency = VehicleData.TransmissionData.TransmissionEfficiency;
-	
-	
+	GetCurrentMovementComponent()->TransmissionSetup = VehicleData.TransmissionData;
 
 	// Bind steering setup
-	//GetCurrentMovementComponent()->SteeringSetup = VehicleData.SteeringData;
+	GetCurrentMovementComponent()->SteeringSetup = VehicleData.SteeringData;
 }
 
 void AODVehiclePawnBase::Steering(const FInputActionValue& Value)

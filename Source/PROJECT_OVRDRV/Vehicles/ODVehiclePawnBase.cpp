@@ -70,21 +70,11 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	
 
 	//	----------------	[SETUP ALL VEHICLES DATA TABLE]	------------------	//
-	static ConstructorHelpers::FObjectFinder<UDataTable> VehiclesDataTableFinder(TEXT("/Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
-
-	if (VehiclesDataTableFinder.Succeeded())
-	{
-		VehiclesDataTable = VehiclesDataTableFinder.Object;
-		UE_LOG(LogTemp, Log, TEXT("✔️ Found and Assigned Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("❌ Failed to find Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
-	}
+	TryFindAllVehiclesDataTable();
 
 	if (CurrentVehicleMovementComponent)
 	{
-		BindVehicleData();
+		BindVehicleConfig();
 	}
 	
 	VehicleID = VehicleData.VehicleID;
@@ -93,13 +83,24 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	
 }
 
+// void AODVehiclePawnBase::OnConstruction(const FTransform& Transform)
+// {
+// 	Super::OnConstruction(Transform);
+//
+// #if WITH_EDITOR
+// 	InitVehicleConfig();		// Pull latest config from data table on property change (and other editor change events)
+// 	UE_LOG(LogTemp, Log, TEXT("✔️ VEHICLE DATA UPDATED"));
+// #endif
+// }
+
+
 // Called when the game starts or when spawned
 void AODVehiclePawnBase::BeginPlay()
 {
 	Super::BeginPlay();
 
 	// Initialize Vehicle Data (If found in Data Table)
-	InitVehicleData();
+	InitVehicleConfig();
 	
 }
 
@@ -137,7 +138,22 @@ void AODVehiclePawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	}
 }
 
-void AODVehiclePawnBase::InitVehicleData()
+void AODVehiclePawnBase::TryFindAllVehiclesDataTable()
+{
+	static ConstructorHelpers::FObjectFinder<UDataTable> VehiclesDataTableFinder(TEXT("/Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+
+	if (VehiclesDataTableFinder.Succeeded())
+	{
+		VehiclesDataTable = VehiclesDataTableFinder.Object;
+		UE_LOG(LogTemp, Log, TEXT("✔️ Found and Assigned Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("❌ Failed to find Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+	}
+}
+
+void AODVehiclePawnBase::InitVehicleConfig()
 {
 	// Find vehicle data from Data Table using Vehicle ID. Assign to Vehicle Data if found. Else, throw an error.
 	if (VehiclesDataTable)
@@ -146,8 +162,10 @@ void AODVehiclePawnBase::InitVehicleData()
 		if (RowData)
 		{
 			VehicleData = *RowData;
-			BindVehicleData();
-			
+			BindVehicleConfig();
+			CurrentVehicleMovementComponent->RecreatePhysicsState();
+
+			UE_LOG(LogTemp, Log, TEXT("✔️ VEHICLE DATA FOUND AND APPLIED"));
 			GEngine->AddOnScreenDebugMessage(0,5,FColor::Green,FString::Printf(
 			TEXT("✅ Vehicle Data Assigned: %s (ID:: %s)"),
 			*VehicleData.VehicleName.ToString(),
@@ -156,6 +174,7 @@ void AODVehiclePawnBase::InitVehicleData()
 		}
 		else
 		{
+			UE_LOG(LogTemp, Log, TEXT("❌ VEHICLE DATA NOT FOUND"));
 			GEngine->AddOnScreenDebugMessage(0,5,FColor::Red,FString::Printf(
 			TEXT("❌ Vehicle Row Data Not Found in DataTable:: %s"),
 			*VehicleID.ToString()));
@@ -168,9 +187,12 @@ void AODVehiclePawnBase::InitVehicleData()
 
 }
 
-void AODVehiclePawnBase::BindVehicleData()
+void AODVehiclePawnBase::BindVehicleConfig()
 {
-	//Todo:: Also call bind in inherited constructor after Updating Vehicle data 
+	// Binds found vehicle data to a corresponding movement component.
+	
+	// Todo:: Also call bind in inherited constructor after Updating Vehicle data too in child classes 
+	// Todo:: Separate into individual Apply functions
 	
 	// Bind chassis setup
 	GetCurrentMovementComponent()->Mass = VehicleData.ChassisData.Mass;
@@ -178,14 +200,28 @@ void AODVehiclePawnBase::BindVehicleData()
 	GetCurrentMovementComponent()->DragCoefficient = VehicleData.ChassisData.DragCoefficient;
 	
 	// Bind engine setup
+	GetCurrentMovementComponent()->EngineSetup.MaxTorque = VehicleData.EngineData.MaxTorque;
+	GetCurrentMovementComponent()->EngineSetup.MaxTorque = VehicleData.EngineData.MaxTorque;
+	GetCurrentMovementComponent()->EngineSetup.MaxRPM = VehicleData.EngineData.MaxRPM;
 	GetCurrentMovementComponent()->EngineSetup.EngineIdleRPM = VehicleData.EngineData.EngineIdleRPM;
-	//GetCurrentMovementComponent()->EngineSetup = VehicleData.EngineData;
+	GetCurrentMovementComponent()->EngineSetup.EngineBrakeEffect = VehicleData.EngineData.EngineBrakeEffect ;
+	GetCurrentMovementComponent()->EngineSetup.EngineRevUpMOI = VehicleData.EngineData.EngineRevUpMOI;
+	GetCurrentMovementComponent()->EngineSetup.EngineRevDownRate = VehicleData.EngineData.EngineRevDownRate;
+	GetCurrentMovementComponent()->EngineSetup.TorqueCurve = VehicleData.EngineData.TorqueCurve;
 
 	// Bind differential setup
-	//GetCurrentMovementComponent()->DifferentialSetup = VehicleData.DifferentialData;
+	GetCurrentMovementComponent()->DifferentialSetup = VehicleData.DifferentialData;
 	
 	// Bind transmission setup
-	//GetCurrentMovementComponent()->TransmissionSetup = VehicleData.TransmissionData;
+	GetCurrentMovementComponent()->TransmissionSetup.bUseAutomaticGears = VehicleData.TransmissionData.bUseAutomaticGears;
+	GetCurrentMovementComponent()->TransmissionSetup.bUseAutoReverse = VehicleData.TransmissionData.bUseAutoReverse;
+	GetCurrentMovementComponent()->TransmissionSetup.FinalRatio = VehicleData.TransmissionData.FinalRatio;
+	GetCurrentMovementComponent()->TransmissionSetup.ChangeUpRPM = VehicleData.TransmissionData.ChangeUpRPM;
+	GetCurrentMovementComponent()->TransmissionSetup.ChangeDownRPM = VehicleData.TransmissionData.ChangeDownRPM;
+	GetCurrentMovementComponent()->TransmissionSetup.GearChangeTime = VehicleData.TransmissionData.GearChangeTime;
+	GetCurrentMovementComponent()->TransmissionSetup.TransmissionEfficiency = VehicleData.TransmissionData.TransmissionEfficiency;
+	
+	
 
 	// Bind steering setup
 	//GetCurrentMovementComponent()->SteeringSetup = VehicleData.SteeringData;

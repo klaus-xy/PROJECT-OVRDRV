@@ -54,8 +54,8 @@ struct FVehicleChassisConfig
 		bEnableCenterOfMassOverride = true;
 		CenterOfMassOverride = FVector::ZeroVector;
 		Mass = 1500.0f;
-		ChassisWidth = 180.f;
-		ChassisHeight = 140.f;
+		ChassisWidth = 180.0f;
+		ChassisHeight = 140.0f;
 		DragCoefficient = 0.3f;
 		DownforceCoefficient = 0.3f;		
 	}

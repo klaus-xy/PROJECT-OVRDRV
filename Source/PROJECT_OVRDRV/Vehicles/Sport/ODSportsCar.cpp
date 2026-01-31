@@ -34,6 +34,7 @@ AODSportsCar::AODSportsCar()
 	GetCurrentMovementComponent()->WheelSetups[3].BoneName = FName("Phys_Wheel_BR");
 	GetCurrentMovementComponent()->WheelSetups[3].AdditionalOffset = FVector(0.0f, 0.0f, 0.0f);
 
+	//VehicleData.EngineData.MaxRPM = 62545.0f;
 }
 
 

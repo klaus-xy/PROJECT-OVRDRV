@@ -23,6 +23,8 @@ public:
 	AODVehiclePawnBase();
 
 protected:
+	// virtual void OnConstruction(const FTransform& Transform) override;
+	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -42,17 +44,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Setup|Data")
 	TObjectPtr<UDataTable> VehiclesDataTable;
 
+	// Find the UDataTable component containing all the vehicles data via a project directory. 
+	void TryFindAllVehiclesDataTable();
+
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Setup|Data")
 	FName VehicleID; // Only editable in blueprints and not instances.
 
+	// Vehicle Row Data
 	UPROPERTY()
 	FODVehicleData VehicleData;
 
 	// Init Vehicle Data from Data Table
-	void InitVehicleData();
+	void InitVehicleConfig();
 	
 	// Bind vehicle data to corresponding Chaos Movement Component variables
-	void BindVehicleData();
+	void BindVehicleConfig();
 	
 public:
 	//	----------------	🩻[CHASSIS SETUP]🛻		------------ //

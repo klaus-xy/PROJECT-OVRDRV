@@ -31,16 +31,16 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	//	----------------	🩻[CHAOS VEHICLE MOVEMENT COMPONENT SETUP]🛻		------------ //
+	// ::::::::::::::	🩻[CHAOS VEHICLE MOVEMENT COMPONENT SETUP]🛻  :::::::::::::: //
 	TObjectPtr<UChaosWheeledVehicleMovementComponent> CurrentVehicleMovementComponent;
 	
 
-	//	----------------	📅[VEHICLE DATA SETUP]🛻		------------ //
+	// ::::::::::::::  📅[VEHICLE DATA SETUP]🛻  :::::::::::::: //
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Setup|Data")
 	TObjectPtr<UDataTable> VehiclesDataTable;
 
@@ -61,11 +61,11 @@ protected:
 	void BindVehicleConfig();
 	
 public:
-	//	----------------	🩻[CHASSIS SETUP]🛻		------------ //
+	//	::::::::::::::  🩻[CHASSIS SETUP]🛻  :::::::::::::: //
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
 	TObjectPtr<UStaticMeshComponent> ChassisMesh;
 
-	//	----------------	🛞[WHEELS SETUP]🛻		------------ //
+	//	::::::::::::::  🛞[WHEELS SETUP]🛻	:::::::::::::: //
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
 	TObjectPtr<UStaticMeshComponent> WheelFR;
 
@@ -78,17 +78,49 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
 	TObjectPtr<UStaticMeshComponent> WheelBL;
 	
-	//	----------------	🎥[CAMERA SETUP]🎥		------------ //
+	//	::::::::::::::  🎥[CAMERA SETUP]🎥	:::::::::::::: //
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
 	TObjectPtr<USpringArmComponent> RearSpringArm;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
 	TObjectPtr<UCameraComponent> RearCamera;
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
+	FRotator FreeLookRotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
+	float CameraLookSensitivity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
+	float CameraResetDelay;
+
+	// Total time used in evaluating curve float values [eg. t = 1s ::>  1 sec to evaluate the whole curve and reach final value]
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
+	float CameraResetCurveLookupDuration;
+
+	// Camera Reset Speed [multiplier if using a float curve]
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
+	float CameraResetSpeed;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
+	float CameraResetElapsedTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
+	TObjectPtr<UCurveFloat> CameraResetSpeedCurve;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
+	bool bCanResetCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
+	FTimerHandle CameraResetStartTimer;
+	
+	
 	
 	protected:
-	//	----------------	[INPUT SETUP]		------------ // 
-	// ----		[INPUT ACTIONS]		---- //
+	//	::::::::::::::	🕹️[INPUT SETUP]🎮	:::::::::::::: // 
+	// ----	[INPUT ACTIONS]	---- //
 	
 	//	Steering Action
 	UPROPERTY(EditAnywhere, Category="Input")
@@ -122,7 +154,7 @@ public:
 	// ----		[INPUT CALLBACK FUNCTIONS]		---- //
 	
 	// Handles steering input 
-	void Steering(const FInputActionValue& Value);
+	void Steer(const FInputActionValue& Value);
 
 	// Handles throttle input
 	void Throttle(const FInputActionValue& Value);
@@ -132,6 +164,9 @@ public:
 
 	// Handles look around input
 	void LookAround(const FInputActionValue& Value);
+
+	// Handles camera reset once mouse look has ended
+	void ResetCamera();
 	
 	// ----		[INPUT METHODS]		---- //
 	// Handles steering logic
@@ -145,6 +180,12 @@ public:
 
 	// Handles mouse look around 
 	void HandleLookAround(float YawDelta);
+
+	// Handles camera reset once mouse look has ended
+	void BeginCameraReset();
+
+	// Handles camera reset logic
+	void HandleCameraReset(float DeltaTime);
 
 public:
 	const TObjectPtr<UChaosWheeledVehicleMovementComponent>& GetCurrentMovementComponent() const {return CurrentVehicleMovementComponent;}

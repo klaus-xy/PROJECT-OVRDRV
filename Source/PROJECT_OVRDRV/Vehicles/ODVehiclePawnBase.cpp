@@ -60,6 +60,13 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	RearCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Front Camera"));
 	RearCamera->SetupAttachment(RearSpringArm);
 
+	bCanResetCamera = true;
+	CameraResetDelay = 1.5f;
+	CameraResetCurveLookupDuration = 2.0f;
+	CameraResetSpeed = 5.0f;
+	CameraLookSensitivity = 1.0f;
+	
+
 	//	----------------	[SETUP VEHICLE PHYSICS]	------------------	//
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName(FName("Vehicle"));
@@ -82,8 +89,6 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 }
 
 
-
-
 // Called when the game starts or when spawned
 void AODVehiclePawnBase::BeginPlay()
 {
@@ -98,6 +103,11 @@ void AODVehiclePawnBase::BeginPlay()
 void AODVehiclePawnBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bCanResetCamera)
+	{
+		HandleCameraReset(DeltaTime);
+	}
 }
 
 // Called to bind functionality to input
@@ -108,8 +118,8 @@ void AODVehiclePawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Steering 
-		EnhancedInputComponent->BindAction(SteeringAction, ETriggerEvent::Triggered, this, &AODVehiclePawnBase::Steering);
-		EnhancedInputComponent->BindAction(SteeringAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::Steering);
+		EnhancedInputComponent->BindAction(SteeringAction, ETriggerEvent::Triggered, this, &AODVehiclePawnBase::Steer);
+		EnhancedInputComponent->BindAction(SteeringAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::Steer);
 
 		// Throttle 
 		EnhancedInputComponent->BindAction(ThrottleAction, ETriggerEvent::Triggered, this, &AODVehiclePawnBase::Throttle);
@@ -121,8 +131,9 @@ void AODVehiclePawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Started, this, &AODVehiclePawnBase::StartBrake);
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::StopBrake);
 
-		// look around 
+		// Look around 
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this, &AODVehiclePawnBase::LookAround);
+		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::ResetCamera);
 		// Reset Camera on complete
 
 	}
@@ -199,7 +210,8 @@ void AODVehiclePawnBase::BindVehicleConfig()
 	GetCurrentMovementComponent()->SteeringSetup = VehicleData.SteeringData;
 }
 
-void AODVehiclePawnBase::Steering(const FInputActionValue& Value)
+//	::::::::::::  INPUT METHODS :::::::::::	//
+void AODVehiclePawnBase::Steer(const FInputActionValue& Value)
 {
 	HandleSteering(Value.Get<float>());
 }
@@ -216,10 +228,17 @@ void AODVehiclePawnBase::Brake(const FInputActionValue& Value)
 
 void AODVehiclePawnBase::LookAround(const FInputActionValue& Value)
 {
+	bCanResetCamera = false;
 	HandleLookAround(Value.Get<float>());
 }
 
-//	---------- INPUT HANDLER METHODS	---------	//
+void AODVehiclePawnBase::ResetCamera()
+{	
+	// Start Reset Countdown Timer & Handle Reset when countdown reaches zero
+	GetWorldTimerManager().SetTimer(CameraResetStartTimer,this,&AODVehiclePawnBase::BeginCameraReset,CameraResetDelay,false);	
+}
+
+//	::::::::::::  METHOD IMPLEMENTATIONS :::::::::::	//
 void AODVehiclePawnBase::HandleSteering(float Value)
 {
 	// Steering logic
@@ -241,8 +260,44 @@ void AODVehiclePawnBase::HandleBrake(float Value)
 void AODVehiclePawnBase::HandleLookAround(float YawDelta)
 {
 	// Look around logic
-	RearSpringArm->AddLocalRotation(FRotator(0.0f, YawDelta, 0.0f));
+	FreeLookRotation.Yaw += YawDelta * CameraLookSensitivity;
+
+	// todo:: Add optional clamp later. (esp for pitch)
+	
+	RearSpringArm->SetRelativeRotation(FreeLookRotation);
 }
 
-// Todo:: handle camera reset. 
+void AODVehiclePawnBase::BeginCameraReset()
+{
+	CameraResetElapsedTime = 0.0f;
+	bCanResetCamera = true;
+}
+
+
+// Reset camera logic
+void AODVehiclePawnBase::HandleCameraReset(float DeltaTime)
+{
+	if (CameraResetSpeedCurve != nullptr)
+	{
+		CameraResetElapsedTime += DeltaTime;
+		float Alpha = FMath::Clamp(CameraResetElapsedTime / CameraResetCurveLookupDuration,0.0f,1.0f);
+		
+		FreeLookRotation = FMath::RInterpTo(FreeLookRotation, FRotator::ZeroRotator, DeltaTime, CameraResetSpeedCurve->GetFloatValue(Alpha)*CameraResetSpeed);
+	}
+	else
+	{
+		FreeLookRotation = FMath::RInterpTo(FreeLookRotation, FRotator::ZeroRotator, DeltaTime, CameraResetSpeed);
+		GEngine->AddOnScreenDebugMessage(0,5,FColor::Red,TEXT("No Camera Reset Speed Curve Found! Using Linear Interpolation for camera reset"));
+	}
+		RearSpringArm->SetRelativeRotation(FreeLookRotation);
+
+	if (FreeLookRotation.IsNearlyZero(0.01))
+	{
+		bCanResetCamera = false;
+		FreeLookRotation = FRotator::ZeroRotator;
+		RearSpringArm->SetRelativeRotation(FreeLookRotation);
+		CameraResetElapsedTime = 0.0f;
+	}
+}
+
 

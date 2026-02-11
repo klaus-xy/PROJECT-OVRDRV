@@ -4,6 +4,25 @@
 #include "ODPlayerController.h"
 
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/UserWidget.h"
+#include "UI/ODVehicleUIBase.h"
+
+void AODPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	// only spawn UI on local player controllers
+	if (IsLocalPlayerController())
+	{
+		// Create the UI widget and add it to the viewport
+		VehicleHUD = CreateWidget<UODVehicleUIBase>(this, VehicleHUDClass);
+		if (VehicleHUD)
+		{
+			VehicleHUD->AddToViewport();
+		}
+	}
+		
+}
 
 void AODPlayerController::SetupInputComponent()
 {

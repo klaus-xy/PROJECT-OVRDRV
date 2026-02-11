@@ -62,8 +62,8 @@ protected:
 	
 public:
 	//	::::::::::::::  🩻[CHASSIS SETUP]🛻  :::::::::::::: //
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
-	TObjectPtr<UStaticMeshComponent> ChassisMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle Setup|Chassis")
+	TObjectPtr<UStaticMeshComponent> MainBodyMesh;
 
 	//	::::::::::::::  🛞[WHEELS SETUP]🛻	:::::::::::::: //
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")

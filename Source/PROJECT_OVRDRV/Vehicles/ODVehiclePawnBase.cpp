@@ -16,8 +16,8 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 
 	
 	//	----------------	[CONSTRUCT VEHICLE CHASSIS MESH]	------------------	//
-	ChassisMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Chassis"));
-	ChassisMesh->SetupAttachment(GetMesh());
+	MainBodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Main Body"));
+	MainBodyMesh->SetupAttachment(GetMesh());
 
 	//	----------------	[CONSTRUCT VEHICLE WHEELS]	------------------	//
 	// Create and Attach Wheel Static Mesh to a bone/socket on the parent Skeletal Mesh
@@ -48,10 +48,10 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	RearSpringArm->TargetArmLength = 600.0f;
 	RearSpringArm->SocketOffset.Z = 150.0f;
 	RearSpringArm->bDoCollisionTest = false;
-	RearSpringArm->bInheritPitch = false;
+	RearSpringArm->bInheritPitch = true;
 	RearSpringArm->bInheritRoll = false;
 	RearSpringArm->bEnableCameraLag = true;
-	RearSpringArm->CameraLagSpeed = 8.0f;
+	RearSpringArm->CameraLagSpeed = 20.0f;
 	RearSpringArm->bEnableCameraRotationLag = true;
 	RearSpringArm->CameraRotationLagSpeed = 4.0f;
 	RearSpringArm->CameraLagMaxDistance = 400.0f;
@@ -73,7 +73,13 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 
 	//	----------------	[SETUP CHAOS VEHICLE MOVEMENT COMPONENT]	------------------	//
 	CurrentVehicleMovementComponent = CastChecked<UChaosWheeledVehicleMovementComponent>(GetVehicleMovement());
+	if (CurrentVehicleMovementComponent)
+	{
+		CurrentVehicleMovementComponent->bEnableCenterOfMassOverride = true;
+		CurrentVehicleMovementComponent->CenterOfMassOverride = FVector::ZeroVector;
+	}
 
+	
 	
 
 	//	----------------	[SETUP ALL VEHICLES DATA TABLE]	------------------	//

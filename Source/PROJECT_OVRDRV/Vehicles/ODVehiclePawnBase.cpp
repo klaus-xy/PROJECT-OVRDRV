@@ -137,6 +137,10 @@ void AODVehiclePawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Started, this, &AODVehiclePawnBase::StartBrake);
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::StopBrake);
 
+		// HandBrake
+		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Started, this, &AODVehiclePawnBase::HandBrake);
+		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::HandBrake);
+
 		// Look around 
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this, &AODVehiclePawnBase::LookAround);
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::ResetCamera);
@@ -232,6 +236,14 @@ void AODVehiclePawnBase::Brake(const FInputActionValue& Value)
 	HandleBrake(Value.Get<float>());
 }
 
+void AODVehiclePawnBase::HandBrake(const FInputActionValue& Value)
+{
+	HandleHandBrake(Value.Get<bool>());
+	GEngine->AddOnScreenDebugMessage(0,2,FColor::Green,FString::Printf(
+			TEXT("HANDBRAKE:: %s"),
+			Value.Get<bool>() ? TEXT("ENGAGED") : TEXT("RELEASED")));
+}
+
 void AODVehiclePawnBase::LookAround(const FInputActionValue& Value)
 {
 	bCanResetCamera = false;
@@ -261,6 +273,12 @@ void AODVehiclePawnBase::HandleBrake(float Value)
 {
 	// Braking logic
 	CurrentVehicleMovementComponent->SetBrakeInput(Value);
+}
+
+void AODVehiclePawnBase::HandleHandBrake(bool Value)
+{
+	// Handbrake logic
+	CurrentVehicleMovementComponent->SetHandbrakeInput(Value);
 }
 
 void AODVehiclePawnBase::HandleLookAround(float YawDelta)

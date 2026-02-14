@@ -162,6 +162,9 @@ protected:
 	// Handles brake input 
 	void Brake(const FInputActionValue& Value);
 
+	// Handles handbrake input 
+	void HandBrake(const FInputActionValue& Value);
+
 	// Handles look around input
 	void LookAround(const FInputActionValue& Value);
 
@@ -177,6 +180,9 @@ protected:
 
 	// Handles brake logic
 	void HandleBrake(float Value);
+
+	// Handles handbrake logic
+	void HandleHandBrake(bool Value);
 
 	// Handles mouse look around 
 	void HandleLookAround(float YawDelta);

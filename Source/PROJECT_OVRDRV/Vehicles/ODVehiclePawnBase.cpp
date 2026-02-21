@@ -238,10 +238,12 @@ void AODVehiclePawnBase::Brake(const FInputActionValue& Value)
 
 void AODVehiclePawnBase::HandBrake(const FInputActionValue& Value)
 {
-	HandleHandBrake(Value.Get<bool>());
-	GEngine->AddOnScreenDebugMessage(0,2,FColor::Green,FString::Printf(
+	bool bIsEngaged = Value.Get<bool>();
+	HandleHandBrake(bIsEngaged);
+	
+	/*GEngine->AddOnScreenDebugMessage(0,2,FColor::Green,FString::Printf(
 			TEXT("HANDBRAKE:: %s"),
-			Value.Get<bool>() ? TEXT("ENGAGED") : TEXT("RELEASED")));
+			bIsEngaged ? TEXT("ENGAGED") : TEXT("RELEASED")));*/
 }
 
 void AODVehiclePawnBase::LookAround(const FInputActionValue& Value)

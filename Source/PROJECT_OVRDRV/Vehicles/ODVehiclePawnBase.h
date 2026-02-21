@@ -193,6 +193,8 @@ protected:
 	// Handles camera reset logic
 	void HandleCameraReset(float DeltaTime);
 
+	
+	// ::::::::::::::  🩻[GETTERS]🛻  :::::::::::::: //
 public:
 	const TObjectPtr<UChaosWheeledVehicleMovementComponent>& GetCurrentMovementComponent() const {return CurrentVehicleMovementComponent;}
 };

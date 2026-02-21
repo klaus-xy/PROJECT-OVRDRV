@@ -36,6 +36,7 @@ void AODPlayerController::Tick(float DeltaTime)
 		VehicleHUD->UpdateSpeed(VehiclePawn->GetCurrentMovementComponent()->GetForwardSpeed());
 		VehicleHUD->UpdateRPM(VehiclePawn->GetCurrentMovementComponent()->GetEngineRotationSpeed(), VehiclePawn->GetCurrentMovementComponent()->GetEngineMaxRotationSpeed());
 		VehicleHUD->UpdateGear(VehiclePawn->GetCurrentMovementComponent()->GetCurrentGear());
+		VehicleHUD->UpdateHandBrake(VehiclePawn->GetCurrentMovementComponent()->GetHandbrakeInput());
 	}
 
 }

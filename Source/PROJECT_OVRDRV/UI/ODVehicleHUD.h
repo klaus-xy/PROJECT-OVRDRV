@@ -30,6 +30,9 @@ public:
 
 	// Called to update the gear display
 	void UpdateGear(int32 NewGear);
+
+	// Called to update the handbrake display
+	void UpdateHandBrake(bool bEngaged);
 	
 
 protected:
@@ -41,5 +44,8 @@ protected:
 	
 	UFUNCTION(BlueprintImplementableEvent, Category="Vehicle")
 	void OnGearUpdate(int32 NewGear);
+
+	UFUNCTION(BlueprintImplementableEvent, Category="Vehicle|Events")
+	void OnHandBrake(bool bEngaged);
 	
 };

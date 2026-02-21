@@ -18,3 +18,8 @@ void UODVehicleHUD::UpdateGear(int32 NewGear)
 {
 	OnGearUpdate(NewGear);
 }
+
+void UODVehicleHUD::UpdateHandBrake(bool bEngaged)
+{
+	OnHandBrake(bEngaged);
+}

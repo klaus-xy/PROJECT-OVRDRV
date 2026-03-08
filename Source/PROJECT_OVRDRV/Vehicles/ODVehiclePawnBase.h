@@ -62,8 +62,8 @@ protected:
 	
 public:
 	//	::::::::::::::  🩻[CHASSIS SETUP]🛻  :::::::::::::: //
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
-	TObjectPtr<UStaticMeshComponent> ChassisMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle Setup|Chassis")
+	TObjectPtr<UStaticMeshComponent> MainBodyMesh;
 
 	//	::::::::::::::  🛞[WHEELS SETUP]🛻	:::::::::::::: //
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Chassis")
@@ -162,6 +162,9 @@ protected:
 	// Handles brake input 
 	void Brake(const FInputActionValue& Value);
 
+	// Handles handbrake input 
+	void HandBrake(const FInputActionValue& Value);
+
 	// Handles look around input
 	void LookAround(const FInputActionValue& Value);
 
@@ -178,6 +181,9 @@ protected:
 	// Handles brake logic
 	void HandleBrake(float Value);
 
+	// Handles handbrake logic
+	void HandleHandBrake(bool Value);
+
 	// Handles mouse look around 
 	void HandleLookAround(float YawDelta);
 
@@ -187,6 +193,8 @@ protected:
 	// Handles camera reset logic
 	void HandleCameraReset(float DeltaTime);
 
+	
+	// ::::::::::::::  🩻[GETTERS]🛻  :::::::::::::: //
 public:
 	const TObjectPtr<UChaosWheeledVehicleMovementComponent>& GetCurrentMovementComponent() const {return CurrentVehicleMovementComponent;}
 };

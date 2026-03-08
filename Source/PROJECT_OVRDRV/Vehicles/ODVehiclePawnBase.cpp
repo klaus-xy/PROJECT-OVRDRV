@@ -16,8 +16,8 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 
 	
 	//	----------------	[CONSTRUCT VEHICLE CHASSIS MESH]	------------------	//
-	ChassisMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Chassis"));
-	ChassisMesh->SetupAttachment(GetMesh());
+	MainBodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Main Body"));
+	MainBodyMesh->SetupAttachment(GetMesh());
 
 	//	----------------	[CONSTRUCT VEHICLE WHEELS]	------------------	//
 	// Create and Attach Wheel Static Mesh to a bone/socket on the parent Skeletal Mesh
@@ -48,10 +48,10 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	RearSpringArm->TargetArmLength = 600.0f;
 	RearSpringArm->SocketOffset.Z = 150.0f;
 	RearSpringArm->bDoCollisionTest = false;
-	RearSpringArm->bInheritPitch = false;
+	RearSpringArm->bInheritPitch = true;
 	RearSpringArm->bInheritRoll = false;
 	RearSpringArm->bEnableCameraLag = true;
-	RearSpringArm->CameraLagSpeed = 8.0f;
+	RearSpringArm->CameraLagSpeed = 20.0f;
 	RearSpringArm->bEnableCameraRotationLag = true;
 	RearSpringArm->CameraRotationLagSpeed = 4.0f;
 	RearSpringArm->CameraLagMaxDistance = 400.0f;
@@ -73,7 +73,13 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 
 	//	----------------	[SETUP CHAOS VEHICLE MOVEMENT COMPONENT]	------------------	//
 	CurrentVehicleMovementComponent = CastChecked<UChaosWheeledVehicleMovementComponent>(GetVehicleMovement());
+	if (CurrentVehicleMovementComponent)
+	{
+		CurrentVehicleMovementComponent->bEnableCenterOfMassOverride = true;
+		CurrentVehicleMovementComponent->CenterOfMassOverride = FVector::ZeroVector;
+	}
 
+	
 	
 
 	//	----------------	[SETUP ALL VEHICLES DATA TABLE]	------------------	//
@@ -131,6 +137,10 @@ void AODVehiclePawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Started, this, &AODVehiclePawnBase::StartBrake);
 		//EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::StopBrake);
 
+		// HandBrake
+		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Started, this, &AODVehiclePawnBase::HandBrake);
+		EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::HandBrake);
+
 		// Look around 
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Triggered, this, &AODVehiclePawnBase::LookAround);
 		EnhancedInputComponent->BindAction(LookAroundAction, ETriggerEvent::Completed, this, &AODVehiclePawnBase::ResetCamera);
@@ -141,16 +151,16 @@ void AODVehiclePawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void AODVehiclePawnBase::TryFindAllVehiclesDataTable()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> VehiclesDataTableFinder(TEXT("/Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> VehiclesDataTableFinder(TEXT("/Game/Vehicles/Data/DT_ODVehicleDataTable"));
 
 	if (VehiclesDataTableFinder.Succeeded())
 	{
 		VehiclesDataTable = VehiclesDataTableFinder.Object;
-		UE_LOG(LogTemp, Log, TEXT("✔️ Found and Assigned Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+		UE_LOG(LogTemp, Log, TEXT("✔️ Found and Assigned Vehicle DataTable at: /Game/Vehicles/Data/DT_ODVehicleDataTable"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("❌ Failed to find Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+		UE_LOG(LogTemp, Error, TEXT("❌ Failed to find Vehicle DataTable at: /Game/Vehicles/Data/DT_ODVehicleDataTable"));
 	}
 }
 
@@ -226,6 +236,16 @@ void AODVehiclePawnBase::Brake(const FInputActionValue& Value)
 	HandleBrake(Value.Get<float>());
 }
 
+void AODVehiclePawnBase::HandBrake(const FInputActionValue& Value)
+{
+	bool bIsEngaged = Value.Get<bool>();
+	HandleHandBrake(bIsEngaged);
+	
+	/*GEngine->AddOnScreenDebugMessage(0,2,FColor::Green,FString::Printf(
+			TEXT("HANDBRAKE:: %s"),
+			bIsEngaged ? TEXT("ENGAGED") : TEXT("RELEASED")));*/
+}
+
 void AODVehiclePawnBase::LookAround(const FInputActionValue& Value)
 {
 	bCanResetCamera = false;
@@ -255,6 +275,12 @@ void AODVehiclePawnBase::HandleBrake(float Value)
 {
 	// Braking logic
 	CurrentVehicleMovementComponent->SetBrakeInput(Value);
+}
+
+void AODVehiclePawnBase::HandleHandBrake(bool Value)
+{
+	// Handbrake logic
+	CurrentVehicleMovementComponent->SetHandbrakeInput(Value);
 }
 
 void AODVehiclePawnBase::HandleLookAround(float YawDelta)

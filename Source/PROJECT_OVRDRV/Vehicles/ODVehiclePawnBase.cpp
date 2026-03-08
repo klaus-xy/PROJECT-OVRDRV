@@ -151,16 +151,16 @@ void AODVehiclePawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void AODVehiclePawnBase::TryFindAllVehiclesDataTable()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> VehiclesDataTableFinder(TEXT("/Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> VehiclesDataTableFinder(TEXT("/Game/Vehicles/Data/DT_ODVehicleDataTable"));
 
 	if (VehiclesDataTableFinder.Succeeded())
 	{
 		VehiclesDataTable = VehiclesDataTableFinder.Object;
-		UE_LOG(LogTemp, Log, TEXT("✔️ Found and Assigned Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+		UE_LOG(LogTemp, Log, TEXT("✔️ Found and Assigned Vehicle DataTable at: /Game/Vehicles/Data/DT_ODVehicleDataTable"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("❌ Failed to find Vehicle DataTable at: /Game/VehicleTemplate/Data/DT_ODVehicleDataTable"));
+		UE_LOG(LogTemp, Error, TEXT("❌ Failed to find Vehicle DataTable at: /Game/Vehicles/Data/DT_ODVehicleDataTable"));
 	}
 }
 

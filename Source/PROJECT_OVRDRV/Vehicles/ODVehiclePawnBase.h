@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WheeledVehiclePawn.h"
+#include "Components/ODVehicleVFXComponent.h"
 #include "Data/ODVehicleData.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "ODVehiclePawnBase.generated.h"
@@ -85,6 +86,12 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")
 	TObjectPtr<UCameraComponent> RearCamera;
+
+	//	::::::::::::::  🌬️[VEHICLE VFX SETUP]💨	:::::::::::::: //
+
+	// Handles all the vehicle's visual effects, such as drift smoke, skid marks, spoiler trails etc.	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Effects")
+	TObjectPtr<UODVehicleVFXComponent> VehicleVfxComponent;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Vehicle Setup|Camera")

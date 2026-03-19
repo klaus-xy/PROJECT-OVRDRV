@@ -65,8 +65,12 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	CameraResetCurveLookupDuration = 2.0f;
 	CameraResetSpeed = 5.0f;
 	CameraLookSensitivity = 1.0f;
-	
 
+
+	//	----------------	[CONSTRUCT VFX SYSTEM SETUP]	------------------	//
+	VehicleVfxComponent = CreateDefaultSubobject<UODVehicleVFXComponent>(TEXT("Vehicle VFX Component"));
+
+	
 	//	----------------	[SETUP VEHICLE PHYSICS]	------------------	//
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName(FName("Vehicle"));

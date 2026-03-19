@@ -17,7 +17,8 @@ public class PROJECT_OVRDRV : ModuleRules
 			"ChaosVehicles",
 			"PhysicsCore",
 			"UMG",
-			"Slate"
+			"Slate",
+			"Niagara"
 		});
 
 		PublicIncludePaths.AddRange(new string[] {

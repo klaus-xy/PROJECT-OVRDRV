@@ -43,7 +43,13 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX")
 	bool bDebugAllVfxSystems;
 	// :::::::::::::::::::	OVR//DRV	:::::::::::::::::::: //
-
+	
+	// Speed threshold for spawning trail VFX (in MPH)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Speed Trails")
+	float TrailThresholdSpeed;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Speed Trails")
+	float TrailBaseSpawnRate; 
 	
 	// ::::::::::::: NIAGARA VFX COMPONENTS ::::::::::::: //
 	// Holds references to dynamically spawned Niagara VFX Components
@@ -86,6 +92,7 @@ private:
 	// Initialize Trail VFX (trails that spawn at specific speed threshold)
 	void InitializeTrailVfx();
 
+	void UpdateAllVfx();
 	void UpdateWheelVfx();
 	void UpdateTrailVfx();
 

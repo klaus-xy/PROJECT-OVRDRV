@@ -18,8 +18,8 @@ class PROJECT_OVRDRV_API UODVehicleHUD : public UODUIBase
 
 protected:
 	// Controls the display of speed in Km/h or MPH
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle")
-	bool bIsMPH = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle")
+	bool bIsMPH = true;
 	
 public:
 	// Called to update the speed display

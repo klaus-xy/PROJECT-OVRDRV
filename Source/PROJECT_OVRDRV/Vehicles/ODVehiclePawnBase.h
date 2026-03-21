@@ -204,4 +204,6 @@ protected:
 	// ::::::::::::::  🩻[GETTERS]🛻  :::::::::::::: //
 public:
 	const TObjectPtr<UChaosWheeledVehicleMovementComponent>& GetCurrentMovementComponent() const {return CurrentVehicleMovementComponent;}
+	const FODVehicleData& GetVehicleData() const {return VehicleData;}
+	
 };

@@ -22,6 +22,9 @@ UODVehicleVFXComponent::UODVehicleVFXComponent()
 	TrailSocketNames.SetNum(2);
 	TrailSocketNames[0] = FName("Trail_BL");
 	TrailSocketNames[1] = FName("Trail_BR");
+
+	TrailThresholdSpeed = 50.0f;
+	TrailBaseSpawnRate = 20.0f;
 }
 
 
@@ -42,11 +45,17 @@ void UODVehicleVFXComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+	// Update all VFX components
+	if (VehicleMovementComponent)
+	{
+		UpdateAllVfx();
+	}
+	
+	
 	if (bDebugAllVfxSystems)
 	{
 		DebugAllVehicleVfx();
 	}
-	
 }
 
 void UODVehicleVFXComponent::InitializeAllVehicleVfxComponents()
@@ -77,7 +86,23 @@ void UODVehicleVFXComponent::InitializeAllVehicleVfxComponents()
 void UODVehicleVFXComponent::InitializeWheelVfx()
 {
 	// Wheel VFX initialization logic here. For example, you could set up particle systems for tire smoke, or decals for skid marks.
-	bool isSkidding = VehicleMovementComponent->GetWheelState(0).bIsSlipping;
+	int8 WheelNum = VehicleMovementComponent->GetNumWheels();
+	for (int8 i = 0; i < WheelNum; i++)
+	{
+		UNiagaraComponent* NewWheelSmokeVfx = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			WheelSmokeSystem,
+			OwningVehiclePawn->GetRootComponent(),
+			WheelSocketNames[i],
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::KeepRelativeOffset,
+			false);
+
+		SpawnedWheelSmokeComponents.Add(NewWheelSmokeVfx);
+
+		// TODO:: Add decal components for skid marks and attach them to the same sockets as the wheel smoke vfx.
+		// Activate them based on slip/skid state of the corresponding wheel in the movement component.
+	}
 }
 
 void UODVehicleVFXComponent::InitializeTrailVfx()
@@ -100,21 +125,75 @@ void UODVehicleVFXComponent::InitializeTrailVfx()
 	}
 }
 
-void UODVehicleVFXComponent::UpdateTrailVfx()
+void UODVehicleVFXComponent::UpdateAllVfx()
 {
-	// Foreach spawned vfx, check if speed is > threshold and activate based on that
+	UpdateWheelVfx();
+	UpdateTrailVfx();
+}
+
+void UODVehicleVFXComponent::UpdateWheelVfx()
+{
+	// Conditions:: Wheel slip, slip threshold, slip intensity
+	// Get Wheels[] -> Wheel States3
+	// Set spawned vfx spawn rate
+	// int8 WheelNum = VehicleMovementComponent->GetNumWheels();
+}
+
+void UODVehicleVFXComponent::UpdateTrailVfx()
+{	
+	// Get current vehicle speed
+	float CurrentSpeed = VehicleMovementComponent->GetForwardSpeedMPH();
+
+	// Check if speed is above threshold and activate trail vfx accordingly
+	if (CurrentSpeed > TrailThresholdSpeed)
+	{
+	// Check and print debug warning if no trail vfx components were spawned and return early
+		if (SpawnedTrailComponents.Num() == 0)
+		{
+			GEngine->AddOnScreenDebugMessage(2,5,FColor::Orange,FString::Printf(
+			TEXT("WARNING:: %s :: is trying to spawn Speed Trails but No Trail VFX components were spawned. Check if TrailSocketNames is set up correctly and if the TrailVFXSystem is assigned in Vehicle Blueprint."),
+			*OwningVehiclePawn->GetVehicleData().VehicleName.ToString()));
+			return;
+		}
+
+		// Check and Activate each TrailVFX attached to the vehicle
+		for (auto TrailVfx : SpawnedTrailComponents)
+		{
+			// Check if the trail vfx spawned is valid.
+			if (TrailVfx != nullptr)
+			{
+				TrailVfx->SetFloatParameter(TEXT("SpawnRate"), TrailBaseSpawnRate);
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(2,5,FColor::Orange,TEXT("Trail VFX System is NULL. Make sure a VFX system has been assigned in the vehicle blueprints."));
+			}
+		}
+	}
+	else
+	{
+		for (auto TrailVfx : SpawnedTrailComponents)
+		{
+			// Check if the trail vfx spawned is valid.
+			if (TrailVfx != nullptr)
+			{
+				TrailVfx->SetFloatParameter(TEXT("SpawnRate"), 0);
+			}
+		}
+	}
 }
 
 void UODVehicleVFXComponent::DebugAllVehicleVfx()
 {
-	DebugTrailVfx();
+	DebugWheelVfx();
+	DebugTrailVfx();	
 }
 
 void UODVehicleVFXComponent::DebugWheelVfx()
 {
 	for (auto SocketName : WheelSocketNames)
 	{
-		DrawDebugSphere(GetWorld(),OwningVehiclePawn->GetRootComponent()->GetSocketLocation(SocketName),16,12,FColor::Cyan);
+		DrawDebugSphere(GetWorld(),OwningVehiclePawn->GetRootComponent()->GetSocketLocation(SocketName),20,12,FColor::Cyan);
 	}
 }
 

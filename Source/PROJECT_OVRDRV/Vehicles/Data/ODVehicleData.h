@@ -91,7 +91,8 @@ public:
 	
 	// ENGINE DATA
 	UPROPERTY(EditAnywhere, Category = "MechanicalSetup")
-	FVehicleEngineConfig EngineData;
+	FVehicleEngineConfig EngineData; // TODO:: Figure out why the torque curve is not being applied when set from the data table and passed on to the movement component. The other engine variables are being applied correctly, but the torque curve is showing up but not being applied.
+	
 
 	// DIFFERENTIAL DATA 
 	UPROPERTY(EditAnywhere, Category = "MechanicalSetup")

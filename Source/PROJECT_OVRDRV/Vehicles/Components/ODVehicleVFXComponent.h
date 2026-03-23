@@ -43,6 +43,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX")
 	bool bDebugAllVfxSystems;
 	// :::::::::::::::::::	OVR//DRV	:::::::::::::::::::: //
+
+	// Controls maximum smoke particles spawn rate (multiplied by a base value - the normalized slip/skid magnitude)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Speed Trails")
+	float WheelSmokeIntensityMultiplier;
+
+	// This value sets the slip/skid magnitude where the max particles should be spawned (e.g if set to 2000, spawn rate is at max value at magnitude of 2000 and remains the same with values over 2000)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Speed Trails")
+	float MaxSmokeMagnitude;
 	
 	// Speed threshold for spawning trail VFX (in MPH)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Speed Trails")

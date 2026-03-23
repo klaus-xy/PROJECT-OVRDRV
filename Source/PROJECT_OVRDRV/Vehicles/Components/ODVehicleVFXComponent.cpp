@@ -25,6 +25,8 @@ UODVehicleVFXComponent::UODVehicleVFXComponent()
 
 	TrailThresholdSpeed = 50.0f;
 	TrailBaseSpawnRate = 20.0f;
+	WheelSmokeIntensityMultiplier = 1.0f;
+	MaxSmokeMagnitude = 2000.0f;
 }
 
 
@@ -136,7 +138,44 @@ void UODVehicleVFXComponent::UpdateWheelVfx()
 	// Conditions:: Wheel slip, slip threshold, slip intensity
 	// Get Wheels[] -> Wheel States3
 	// Set spawned vfx spawn rate
-	// int8 WheelNum = VehicleMovementComponent->GetNumWheels();
+	int8 WheelNum = VehicleMovementComponent->GetNumWheels();
+	
+	for (int8 i = 0; i < WheelNum; i++)
+	{
+		FWheelStatus WheelStatus = VehicleMovementComponent->GetWheelState(i);
+		// Intensity is based of both slip and skid magnitude [clamped to 0 and 1 for easy control]
+		float SlipMagnitude = FMath::Abs(WheelStatus.SlipMagnitude);
+		float SkidMagnitude = FMath::Abs(WheelStatus.SkidMagnitude);
+
+		// Intensity ranges from 0 -> 1 for flexibility.
+		float Intensity = FMath::Max(SlipMagnitude,SkidMagnitude); // Find max and normalize to range
+		Intensity = FMath::GetRangePct(0.0f,MaxSmokeMagnitude,Intensity);
+		// Debug skid and slip magnitude
+		GEngine->AddOnScreenDebugMessage(i+10,0.0f,FColor::Blue,FString::Printf(
+			TEXT("Wheel %d :: Slip/Skid Mag = %f"),
+			i,Intensity));
+		
+		// If conditions are met, spawn smoke
+		if (WheelStatus.bIsSkidding | WheelStatus.bIsSlipping)
+		{
+			// Check if the Smoke VFX is valid first
+			if (SpawnedWheelSmokeComponents[i] != nullptr)
+			{
+				SpawnedWheelSmokeComponents[i]->SetFloatParameter(TEXT("SmokeIntensity"), Intensity * WheelSmokeIntensityMultiplier);
+			}
+		}
+		else
+		{
+			// Check if the Smoke VFX is valid first
+			if (SpawnedWheelSmokeComponents[i] != nullptr)
+			{
+				SpawnedWheelSmokeComponents[i]->SetFloatParameter(TEXT("SmokeIntensity"), 0);
+			}
+		}
+
+		// Todo: Spawn vfx depending on road surface [e.g driving on a dusty road continuously spawns dust particle,rainy road spawns mist, etc...]
+	}
+	
 }
 
 void UODVehicleVFXComponent::UpdateTrailVfx()

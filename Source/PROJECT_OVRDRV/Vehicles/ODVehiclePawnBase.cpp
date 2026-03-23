@@ -45,7 +45,7 @@ AODVehiclePawnBase::AODVehiclePawnBase()
 	// Rear Spring Arm Setup
 	RearSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Rear Spring Arm"));	  // Create Spring arm 
 	RearSpringArm->SetupAttachment(GetMesh());	// Attach spring arm to parent skeletal mesh
-	RearSpringArm->TargetArmLength = 600.0f;
+	RearSpringArm->TargetArmLength = 500.0f;
 	RearSpringArm->SocketOffset.Z = 150.0f;
 	RearSpringArm->bDoCollisionTest = false;
 	RearSpringArm->bInheritPitch = true;

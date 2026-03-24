@@ -13,17 +13,17 @@ UODVehicleVFXComponent::UODVehicleVFXComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
-	WheelSocketNames.SetNum(4);
-	WheelSocketNames[0] = "Phys_Wheel_BL";
-	WheelSocketNames[1] = "Phys_Wheel_BR";
-	WheelSocketNames[2] = "Phys_Wheel_FL";
-	WheelSocketNames[3] = "Phys_Wheel_FR";
+	//WheelSocketNames.SetNum(4);
+	//WheelSocketNames[0] = "Phys_Wheel_BL";
+	//WheelSocketNames[1] = "Phys_Wheel_BR";
+	//WheelSocketNames[2] = "Phys_Wheel_FL";
+	//WheelSocketNames[3] = "Phys_Wheel_FR";
 
 	TrailSocketNames.SetNum(2);
 	TrailSocketNames[0] = FName("Trail_BL");
 	TrailSocketNames[1] = FName("Trail_BR");
 
-	TrailThresholdSpeed = 50.0f;
+	TrailThresholdSpeed = 100.0f;
 	TrailBaseSpawnRate = 20.0f;
 	WheelSmokeIntensityMultiplier = 1.0f;
 	MaxSmokeMagnitude = 2000.0f;
@@ -91,15 +91,18 @@ void UODVehicleVFXComponent::InitializeWheelVfx()
 	int8 WheelNum = VehicleMovementComponent->GetNumWheels();
 	for (int8 i = 0; i < WheelNum; i++)
 	{
+		FName WheelBoneName = VehicleMovementComponent->WheelSetups[i].BoneName;
+
 		UNiagaraComponent* NewWheelSmokeVfx = UNiagaraFunctionLibrary::SpawnSystemAttached(
 			WheelSmokeSystem,
 			OwningVehiclePawn->GetRootComponent(),
-			WheelSocketNames[i],
+			WheelBoneName,
 			FVector::ZeroVector,
 			FRotator::ZeroRotator,
 			EAttachLocation::KeepRelativeOffset,
 			false);
-
+		
+		WheelSocketNames.Add(WheelBoneName);
 		SpawnedWheelSmokeComponents.Add(NewWheelSmokeVfx);
 
 		// TODO:: Add decal components for skid marks and attach them to the same sockets as the wheel smoke vfx.

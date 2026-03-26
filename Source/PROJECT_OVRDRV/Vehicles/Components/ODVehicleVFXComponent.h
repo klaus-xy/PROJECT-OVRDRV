@@ -45,12 +45,20 @@ private:
 	// :::::::::::::::::::	OVR//DRV	:::::::::::::::::::: //
 
 	// Controls maximum smoke particles spawn rate (multiplied by a base value - the normalized slip/skid magnitude)
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Speed Trails")
-	float WheelSmokeIntensityMultiplier;
-
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Speed Trails")
+	//float WheelSmokeIntensityMultiplier;
+	
+	// This value sets the slip/skid magnitude where the min particles should start spawning (e.g if set to 500, spawn rate starts increasing after slip/skid magnitude of 500. Value remains at 0 before magnitude of 500. Value of 0 automatically uses the wheel slip/skid threshold)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Smoke VFX")
+	float ThresholdSmokeMagnitude;
+	
 	// This value sets the slip/skid magnitude where the max particles should be spawned (e.g if set to 2000, spawn rate is at max value at magnitude of 2000 and remains the same with values over 2000)
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Speed Trails")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Smoke VFX")
 	float MaxSmokeMagnitude;
+
+	// This value sets the max spawn rate for smoke particles
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Smoke VFX")
+	float MaxSmokeIntensity;
 	
 	// Speed threshold for spawning trail VFX (in MPH)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX | Speed Trails")
@@ -74,7 +82,7 @@ private:
 	// ::::::::::::: NIAGARA SYSTEMS ::::::::::::: //
 	// Socket names for each wheel to attach the smoke VFX to
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX")
 	TArray<FName> WheelSocketNames; 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true),  Category = "Vehicle VFX")
 	TArray<FName> TrailSocketNames;

@@ -4,29 +4,34 @@
 #include "ODVehicleVFXComponent.h"
 #include "Vehicles/ODVehiclePawnBase.h"
 
-
+// TODO:: Skid,slip,surface-dirt/snow/rain vfx,
 // Sets default values for this component's properties
 UODVehicleVFXComponent::UODVehicleVFXComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 	//WheelSocketNames.SetNum(4);
 	//WheelSocketNames[0] = "Phys_Wheel_BL";
 	//WheelSocketNames[1] = "Phys_Wheel_BR";
 	//WheelSocketNames[2] = "Phys_Wheel_FL";
 	//WheelSocketNames[3] = "Phys_Wheel_FR";
+	// ...
 
+	//WheelSmokeIntensityMultiplier = 1.0f;
+	ThresholdSmokeMagnitude = 0.0f;
+	MaxSmokeMagnitude = 2000.0f;
+	MaxSmokeIntensity = 250.0f;
+	
 	TrailSocketNames.SetNum(2);
-	TrailSocketNames[0] = FName("Trail_BL");
-	TrailSocketNames[1] = FName("Trail_BR");
+	TrailSocketNames[0] = FName("Spoiler_BL");
+	TrailSocketNames[1] = FName("Spoiler_BR");
 
 	TrailThresholdSpeed = 100.0f;
 	TrailBaseSpawnRate = 20.0f;
-	WheelSmokeIntensityMultiplier = 1.0f;
-	MaxSmokeMagnitude = 2000.0f;
+	
+
+	
 }
 
 
@@ -138,25 +143,25 @@ void UODVehicleVFXComponent::UpdateAllVfx()
 
 void UODVehicleVFXComponent::UpdateWheelVfx()
 {
-	// Conditions:: Wheel slip, slip threshold, slip intensity
-	// Get Wheels[] -> Wheel States3
-	// Set spawned vfx spawn rate
+	// Conditions:: Wheel slip/skid, threshold, magnitude. Sets vfx spawn rate
+	
+	// Get WheelStates[] for all instantiated wheels
 	int8 WheelNum = VehicleMovementComponent->GetNumWheels();
 	
 	for (int8 i = 0; i < WheelNum; i++)
 	{
 		FWheelStatus WheelStatus = VehicleMovementComponent->GetWheelState(i);
-		// Intensity is based of both slip and skid magnitude [clamped to 0 and 1 for easy control]
+		
 		float SlipMagnitude = FMath::Abs(WheelStatus.SlipMagnitude);
 		float SkidMagnitude = FMath::Abs(WheelStatus.SkidMagnitude);
-
-		// Intensity ranges from 0 -> 1 for flexibility.
-		float Intensity = FMath::Max(SlipMagnitude,SkidMagnitude); // Find max and normalize to range
-		Intensity = FMath::GetRangePct(0.0f,MaxSmokeMagnitude,Intensity);
+		
+		// Find max Magnitude (btw skid and slip) and normalize to range 0 -> 1 for flexibility.
+		float Magnitude = FMath::Max(SlipMagnitude,SkidMagnitude);
+		Magnitude = FMath::GetRangePct(ThresholdSmokeMagnitude, MaxSmokeMagnitude, Magnitude);
+		Magnitude = FMath::Clamp(Magnitude,0.0f,1.0f); // Clamp to avoid negative values and overshooting
+		
 		// Debug skid and slip magnitude
-		GEngine->AddOnScreenDebugMessage(i+10,0.0f,FColor::Blue,FString::Printf(
-			TEXT("Wheel %d :: Slip/Skid Mag = %f"),
-			i,Intensity));
+		 GEngine->AddOnScreenDebugMessage(i+10,0.0f,FColor::Blue,FString::Printf(TEXT("Wheel %d :: Slip/Skid Mag = %f"),i,Magnitude));
 		
 		// If conditions are met, spawn smoke
 		if (WheelStatus.bIsSkidding | WheelStatus.bIsSlipping)
@@ -164,7 +169,7 @@ void UODVehicleVFXComponent::UpdateWheelVfx()
 			// Check if the Smoke VFX is valid first
 			if (SpawnedWheelSmokeComponents[i] != nullptr)
 			{
-				SpawnedWheelSmokeComponents[i]->SetFloatParameter(TEXT("SmokeIntensity"), Intensity * WheelSmokeIntensityMultiplier);
+				SpawnedWheelSmokeComponents[i]->SetFloatParameter(TEXT("SmokeIntensity"),  MaxSmokeIntensity * Magnitude);
 			}
 		}
 		else
